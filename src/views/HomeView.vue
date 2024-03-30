@@ -8,18 +8,20 @@ import { reactive, onMounted, ref } from 'vue'
 const data = reactive({})
 const filteredData = reactive({})
 let searchTerm = ''
+let teste = 'movies'
 
-
-onMounted(async () => {
-  const response = await axios.get('http://192.168.0.109:80/api/movies')
+const fetchData = async (page) => {
+  teste = page
+  const response = await axios.get('http://localhost/api/' + page)
   data.value = response.data
   filteredData.value = response.data
-})
+  
+}
 
 const filterByDuration = () => {
+
   if (!searchTerm) {
-    filteredData.value = data.value
-    return
+    return filteredData.value
   }
   const durationFilter = parseInt(searchTerm)
   filteredData.value = data.value.filter(item => item.duration < durationFilter)
@@ -29,6 +31,7 @@ const handleInput = (test) => {
   const [hours=0, mins=0] = test.split(':').map(Number)
   searchTerm = hours * 60 + mins
   console.log(searchTerm)
+  
   filterByDuration()
 }
 
@@ -38,7 +41,7 @@ const handleInput = (test) => {
   <SearchBar @search="handleInput"/>
   <div class="bg-[#263537] py-12 px-5 h-full">
 
-    <div v-for="movie in filteredData.value">
+    <div v-if="teste == 'movies'" v-for="movie in filteredData.value">
       <MediaCard 
         :title="movie.media.title" 
         :description="movie.media.description" 
@@ -46,6 +49,35 @@ const handleInput = (test) => {
         :cover="movie.media.cover"
       />
     </div>
+
+    <div v-if="teste == 'tvshows'" v-for="tvshow in filteredData.value">
+      <MediaCard 
+        :title="tvshow.media.title" 
+        :description="tvshow.media.description" 
+        :seasons="tvshow.seasons" 
+        :episodes="tvshow.episodes" 
+        :cover="tvshow.media.cover"
+      />
+    </div>
+    <!-- <div v-if="teste == 'movies'" v-for="movie in filteredData.value">
+      <MediaCard 
+        :title="movie.media.title" 
+        :description="movie.media.description" 
+        :duration="movie.duration" 
+        :cover="movie.media.cover"
+      />
+    </div>
+
+    <div v-else-if="teste == 'tvshows'" v-for="tvshow in filteredData.value">
+      <MediaCard 
+        :title="tvshow.media.title" 
+        :description="tvshow.media.description" 
+        :seasons="tvshow.seasons" 
+        :episodes="tvshow.episodes" 
+        :cover="tvshow.media.cover"
+      />
+    </div> -->
+
   </div>
-  <MenuBar/>
+  <MenuBar @changepage="fetchData"/>
 </template>
